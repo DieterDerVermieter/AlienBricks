@@ -12,6 +12,8 @@ namespace DieterDerVermieter
         [SerializeField] private float m_speed = 5.0f;
         [SerializeField] private float m_radius = 0.2f;
 
+        [SerializeField] private AudioClip m_impactSound;
+
 
         private static RaycastHit2D[] m_raycastHits = new RaycastHit2D[20];
 
@@ -49,6 +51,7 @@ namespace DieterDerVermieter
 
                 var nextDirection = m_movementDirection;
                 IImpactHandler nextImpactHandler = null;
+                var hadImpact = false;
 
                 for (int i = 0; i < Physics2D.CircleCastNonAlloc(transform.position, m_radius, m_movementDirection, m_raycastHits, distance); i++)
                 {
@@ -73,6 +76,7 @@ namespace DieterDerVermieter
                         nextDirection = m_movementDirection;
                         nextImpactHandler = hit.collider.GetComponent<IImpactHandler>();
                         m_triggeredTriggers.Clear();
+                        hadImpact = true;
 
                         Instantiate(m_impactEffectPrefab, hit.point, Quaternion.identity);
 
@@ -89,6 +93,9 @@ namespace DieterDerVermieter
 
                 transform.position += m_movementDirection * distance;
                 m_movementDirection = nextDirection;
+
+                if(hadImpact)
+                    AudioManager.PlayAudioClip(m_impactSound);
 
                 if (nextImpactHandler != null)
                     nextImpactHandler.HandleImpact(this);

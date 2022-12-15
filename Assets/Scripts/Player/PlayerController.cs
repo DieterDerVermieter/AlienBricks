@@ -16,6 +16,8 @@ namespace DieterDerVermieter
         [SerializeField] private float m_maxAimAngle = 70.0f;
         [SerializeField] private float m_shootDelay = 0.1f;
 
+        [SerializeField] private AudioClip m_shootSound;
+
 
         private Camera m_mainCamera;
         private RaycastHit2D[] m_raycastHits = new RaycastHit2D[10];
@@ -189,6 +191,8 @@ namespace DieterDerVermieter
             var ball = Instantiate(m_ballPrefab);
             ball.transform.position = transform.position;
             ball.Setup(direction);
+
+            AudioManager.PlayAudioClip(m_shootSound);
         }
 
 

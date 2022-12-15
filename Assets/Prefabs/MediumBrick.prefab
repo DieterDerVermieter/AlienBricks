@@ -9,6 +9,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 4494743285168588824, guid: a279b755fa74ac04cb7843ec099cbc32, type: 3}
+      propertyPath: m_breakSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 79a41f00b76270c429879ed12b47af51, type: 3}
+    - target: {fileID: 4494743285168588824, guid: a279b755fa74ac04cb7843ec099cbc32, type: 3}
       propertyPath: m_cellsPerStep
       value: 2
       objectReference: {fileID: 0}

@@ -314,6 +314,7 @@ MonoBehaviour:
   m_healthText: {fileID: 5719925411158859237}
   m_healthTintFull: {r: 1, g: 0.5712824, b: 0, a: 1}
   m_healthTintDead: {r: 1, g: 0.89338535, b: 0, a: 1}
+  m_breakSound: {fileID: 8300000, guid: bbf0cfed9c82a8a46a1570071bd6b48c, type: 3}
 --- !u!61 &4494743285168588830
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1061084479905151922}
   - component: {fileID: 1061084479905151921}
   m_Layer: 0
-  m_Name: TestVFX
+  m_Name: BallImpact
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

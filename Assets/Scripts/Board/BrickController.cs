@@ -20,6 +20,8 @@ namespace DieterDerVermieter
         [SerializeField] private Color m_healthTintFull = Color.green;
         [SerializeField] private Color m_healthTintDead = Color.red;
 
+        [SerializeField] private AudioClip m_breakSound;
+
 
         private int m_maxHealth;
         private int m_currentHealth;
@@ -79,6 +81,8 @@ namespace DieterDerVermieter
             {
                 m_currentHealth = 0;
                 m_boardController.DestroyObject(this);
+
+                AudioManager.PlayAudioClip(m_breakSound);
 
                 GameValues.Combo++;
                 GameValues.Score += m_pointsWorth * GameValues.Combo;

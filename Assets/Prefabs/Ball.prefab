@@ -136,6 +136,7 @@ MonoBehaviour:
   m_impactEffectPrefab: {fileID: 1061084479905151935, guid: 2ab0d1ac75fe1dc40af2fa5041ce29b3, type: 3}
   m_speed: 10
   m_radius: 0.2
+  m_impactSound: {fileID: 8300000, guid: ad3e7af2c1cb072459f42ad73d5b3f8f, type: 3}
 --- !u!210 &4652977155817695951
 SortingGroup:
   m_ObjectHideFlags: 0

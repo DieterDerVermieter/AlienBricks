@@ -51,6 +51,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_extraBalls: 1
+  m_collectionSound: {fileID: 8300000, guid: 3b3fcb67e02b4634592e9a76ba3e1c91, type: 3}
 --- !u!58 &5492549367704196777
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -78,6 +79,7 @@ SortingGroup:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_SortAtRoot: 0
 --- !u!1 &5492549369403499658
 GameObject:
   m_ObjectHideFlags: 0
