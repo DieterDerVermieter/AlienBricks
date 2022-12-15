@@ -134,10 +134,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_speedBonusPerImpact: 1.2
   m_impactEffectPrefab: {fileID: 1061084479905151935, guid: 2ab0d1ac75fe1dc40af2fa5041ce29b3, type: 3}
-  Radius: 0.2
-  Speed: 5
-  MovementDirection: {x: 0, y: 0, z: 0}
-  IsActive: 1
+  m_speed: 10
+  m_radius: 0.2
 --- !u!210 &4652977155817695951
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -149,6 +147,7 @@ SortingGroup:
   m_SortingLayerID: 1306334989
   m_SortingLayer: 1
   m_SortingOrder: 0
+  m_SortAtRoot: 0
 --- !u!1 &6563819464189466512
 GameObject:
   m_ObjectHideFlags: 0
@@ -834,6 +833,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     randomizeRotationDirection: 0
+    gravitySource: 0
     maxNumParticles: 1000
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
@@ -4218,6 +4218,7 @@ ParticleSystem:
         m_RotationOrder: 4
     minVertexDistance: 0.2
     textureMode: 0
+    textureScale: {x: 1, y: 1}
     ribbonCount: 1
     shadowBias: 0.5
     worldSpace: 0

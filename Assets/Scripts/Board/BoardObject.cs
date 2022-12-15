@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace DieterDerVermieter
 {
+    /// <summary>
+    /// Base class for all objects that live on the board grid and should get managed by the <see cref="BoardController"/>.
+    /// </summary>
     public abstract class BoardObject : MonoBehaviour
     {
         protected BoardController m_boardController;

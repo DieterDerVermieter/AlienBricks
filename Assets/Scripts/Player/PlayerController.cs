@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
-using TMPro;
 
 namespace DieterDerVermieter
 {
@@ -50,7 +49,7 @@ namespace DieterDerVermieter
 
         private void Update()
         {
-            if(IsTurnActive)
+            if (IsTurnActive)
             {
                 switch (m_currentState)
                 {
@@ -66,10 +65,12 @@ namespace DieterDerVermieter
 
                                 // Reset relevant values
                                 m_shootingDirection = aimDirection;
-                                m_shootingCount = 10;
+                                m_shootingCount = GameValues.BallCount;
 
                                 m_shootingCounter = 0;
                                 m_shootingTimer = 0;
+
+                                m_collectionCounter = 0;
 
                                 m_hasNextPosition = false;
                             }
@@ -92,9 +93,6 @@ namespace DieterDerVermieter
                             {
                                 // Start collecting
                                 m_currentState = State.Collecting;
-
-                                // Reset relevant values
-                                m_collectionCounter = 0;
                             }
                         }
                         break;
@@ -180,6 +178,8 @@ namespace DieterDerVermieter
         {
             IsTurnActive = true;
             m_currentState = State.Aiming;
+
+            GameValues.Combo = 0;
         }
 
 

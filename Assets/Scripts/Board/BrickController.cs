@@ -9,23 +9,23 @@ namespace DieterDerVermieter
 {
     public class BrickController : BoardObject, IImpactHandler
     {
-        [SerializeField] float m_healthPerLevel = 1.0f;
-        [SerializeField] int m_pointsPerLevel = 100;
+        [SerializeField] private float m_healthPerLevel = 1.0f;
+        [SerializeField] private int m_pointsPerLevel = 100;
 
-        [SerializeField] int m_stepsPerMove = 1;
+        [SerializeField] private int m_stepsPerMove = 1;
 
-        [SerializeField] SpriteRenderer m_healthTintRenderer;
-        [SerializeField] TMP_Text m_healthText;
+        [SerializeField] private SpriteRenderer m_healthTintRenderer;
+        [SerializeField] private TMP_Text m_healthText;
 
-        [SerializeField] Color m_healthTintFull = Color.green;
-        [SerializeField] Color m_healthTintDead = Color.red;
-
-
-        int m_maxHealth;
-        int m_currentHealth;
+        [SerializeField] private Color m_healthTintFull = Color.green;
+        [SerializeField] private Color m_healthTintDead = Color.red;
 
 
-        public int PointsWorth { get; private set; }
+        private int m_maxHealth;
+        private int m_currentHealth;
+
+
+        private int m_pointsWorth;
 
 
         protected override void Update()
@@ -43,10 +43,10 @@ namespace DieterDerVermieter
         {
             base.Setup(controller, position);
 
-            m_maxHealth = (int)(m_boardController.CurrentLevel * m_healthPerLevel);
+            m_maxHealth = (int)(GameValues.Level * m_healthPerLevel);
             m_currentHealth = m_maxHealth;
 
-            PointsWorth = m_pointsPerLevel * controller.CurrentLevel;
+            m_pointsWorth = m_pointsPerLevel * GameValues.Level;
         }
 
 
@@ -79,6 +79,9 @@ namespace DieterDerVermieter
             {
                 m_currentHealth = 0;
                 m_boardController.DestroyObject(this);
+
+                GameValues.Combo++;
+                GameValues.Score += m_pointsWorth * GameValues.Combo;
             }
         }
     }

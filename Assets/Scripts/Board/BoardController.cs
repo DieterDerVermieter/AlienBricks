@@ -30,7 +30,6 @@ namespace DieterDerVermieter
 
         public List<BoardObject> Board = new List<BoardObject>();
 
-        public int CurrentLevel { get; private set; }
 
         public System.Action<BoardObject> OnBoardObjectDestroyed;
 
@@ -51,8 +50,6 @@ namespace DieterDerVermieter
         {
             if (Board.Any(obj => obj.GridPosition.y == 0))
                 return;
-
-            CurrentLevel++;
 
             var powerupCol = Random.Range(0, m_cols);
             var totalBrickWeight = m_bricks.Sum(brickData => brickData.Weight);

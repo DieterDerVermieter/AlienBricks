@@ -21,7 +21,7 @@ namespace DieterDerVermieter
 
             m_triggered = true;
 
-            //PlayerController.BallCount += m_extraBalls;
+            GameValues.BallCount += m_extraBalls;
             m_boardController.DestroyObject(this);
         }
 
@@ -30,11 +30,6 @@ namespace DieterDerVermieter
         {
             var targetPosition = GridPosition + Vector2Int.up;
             var targetPositionBlocked = m_boardController.Board.Any(obj => obj.GridPosition == targetPosition);
-
-            foreach (var obj in m_boardController.Board.Where(obj => obj.GridPosition == targetPosition))
-            {
-                Debug.Log($"{name}: Move blocked by {obj.name}");
-            }
 
             if (!targetPositionBlocked)
                 SetPosition(targetPosition);
