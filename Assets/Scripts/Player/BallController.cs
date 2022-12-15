@@ -95,7 +95,7 @@ namespace DieterDerVermieter
                 m_movementDirection = nextDirection;
 
                 if(hadImpact)
-                    AudioManager.PlayAudioClip(m_impactSound);
+                    AudioManager.Instance.PlayAudioClip(m_impactSound);
 
                 if (nextImpactHandler != null)
                     nextImpactHandler.HandleImpact(this);

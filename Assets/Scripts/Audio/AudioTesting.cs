@@ -9,9 +9,7 @@ namespace DieterDerVermieter
         [SerializeField] private AudioClip m_sound;
 
         [SerializeField] private float m_frequency = 1.0f;
-
         [SerializeField] private int m_amount = 1;
-        [SerializeField] private float m_delay = 0;
 
 
         private float m_timer;
@@ -23,18 +21,10 @@ namespace DieterDerVermieter
             if(m_timer <= 0)
             {
                 m_timer = 1 / m_frequency;
-                StartCoroutine(PlaySound(m_sound, m_amount, m_delay));
-            }
-        }
-
-
-        private IEnumerator PlaySound(AudioClip sound, int amount, float delay)
-        {
-            var wait = new WaitForSeconds(delay);
-            for (int i = 0; i < amount; i++)
-            {
-                AudioManager.PlayAudioClip(sound);
-                yield return wait;
+                for (int i = 0; i < m_amount; i++)
+                {
+                    AudioManager.Instance.PlayAudioClip(m_sound);
+                }
             }
         }
     }

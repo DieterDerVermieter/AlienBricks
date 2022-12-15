@@ -1,92 +1,105 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace DieterDerVermieter
 {
+    /// <summary>
+    /// Plays <see cref="AudioClip"/>s and manages them, so they don't overload the game sound.
+    /// </summary>
     public class AudioManager : MonoBehaviour
     {
+        public static AudioManager Instance { get; private set; }
+
+
         [SerializeField] private AudioSource m_audioSourcePrefab;
         [SerializeField] private int m_audioSourceCount;
+        [SerializeField] private float m_audioClipOverloadThreshold = 1.0f;
 
 
-        private static List<AudioSource> m_freeSources = new List<AudioSource>();
-        private static Dictionary<AudioClip, AudioSource> m_playingSources = new Dictionary<AudioClip, AudioSource>();
+        private class ClipInfo
+        {
+            public AudioSource Source;
+            public float Value;
+        }
 
-        private static AudioSource[] m_audioSources;
-        private static int m_nextFreeSource;
+
+        private List<AudioSource> m_freeSources = new List<AudioSource>();
+        private Dictionary<AudioClip, ClipInfo> m_playingSources = new Dictionary<AudioClip, ClipInfo>();
 
 
         private void Awake()
         {
-            //m_audioSources = new AudioSource[m_audioSourceCount];
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+
+            // Initialize some sources to get used for playing clips
             for (int i = 0; i < m_audioSourceCount; i++)
             {
                 var source = Instantiate(m_audioSourcePrefab, transform);
-                //m_audioSources[i] = source;
                 m_freeSources.Add(source);
             }
         }
 
 
-        public static void PlayAudioClip(AudioClip clip)
+        /// <summary>
+        /// Play an <see cref="AudioClip"/> a single time.
+        /// </summary>
+        /// <param name="clip">The clip to play.</param>
+        public void PlayAudioClip(AudioClip clip)
         {
-            if(!m_playingSources.TryGetValue(clip, out var source))
+            if (m_playingSources.TryGetValue(clip, out var clipInfo))
             {
+                // Don't play this clip, if it was played a moment ago
+                if (clipInfo.Value >= m_audioClipOverloadThreshold)
+                    return;
+
+                clipInfo.Source.PlayOneShot(clip);
+                clipInfo.Value += 1;
+            }
+            else
+            {
+                // Check, if there is a free source
                 if (m_freeSources.Count <= 0)
                     return;
 
-                source = m_freeSources[0];
+                clipInfo = new ClipInfo();
+                clipInfo.Source = m_freeSources[0];
 
+                clipInfo.Source.PlayOneShot(clip);
+                clipInfo.Value += 1;
+
+                // Put source from free list to playing dict
                 m_freeSources.RemoveAt(0);
-                m_playingSources.Add(clip, source);
+                m_playingSources.Add(clip, clipInfo);
             }
-
-            source.PlayOneShot(clip);
-
-
-            /*
-            if (m_nextFreeSource >= m_audioSources.Length)
-                return;
-
-            m_audioSources[m_nextFreeSource].PlayOneShot(clip);
-            m_nextFreeSource++;
-            */
         }
 
 
         private void Update()
         {
+            // Go trough playing sources and check, if some are done playing
             foreach (var clip in m_playingSources.Keys.ToList())
             {
-                var source = m_playingSources[clip];
-                if (source.isPlaying)
+                var clipInfo = m_playingSources[clip];
+                if (clipInfo.Source.isPlaying)
                 {
+                    // Adjust the sources value to stop clips from being played to frequent
+                    clipInfo.Value *= 1 - Time.deltaTime / clip.length;
                     continue;
                 }
 
+                // Move source to free list, so it can get used for another clip
                 m_playingSources.Remove(clip);
-                m_freeSources.Add(source);
+                m_freeSources.Add(clipInfo.Source);
             }
-
-            /*
-            int i = 0;
-            while(i < m_nextFreeSource)
-            {
-                if (m_audioSources[i].isPlaying)
-                {
-                    i++;
-                    continue;
-                }
-
-                m_nextFreeSource--;
-
-                var tmp = m_audioSources[m_nextFreeSource];
-                m_audioSources[m_nextFreeSource] = m_audioSources[i];
-                m_audioSources[i] = tmp;
-            }
-            */
         }
     }
 }

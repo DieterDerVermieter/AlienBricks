@@ -192,7 +192,7 @@ namespace DieterDerVermieter
             ball.transform.position = transform.position;
             ball.Setup(direction);
 
-            AudioManager.PlayAudioClip(m_shootSound);
+            AudioManager.Instance.PlayAudioClip(m_shootSound);
         }
 
 

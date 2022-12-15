@@ -257,6 +257,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_audioSourcePrefab: {fileID: 4821047095295571428, guid: 5f52c9a796de2874881a7e9e664e83e5, type: 3}
   m_audioSourceCount: 4
+  m_audioClipOverloadThreshold: 2
 --- !u!4 &333352907
 Transform:
   m_ObjectHideFlags: 0
@@ -879,7 +880,6 @@ MonoBehaviour:
   m_sound: {fileID: 8300000, guid: ad3e7af2c1cb072459f42ad73d5b3f8f, type: 3}
   m_frequency: 1
   m_amount: 1
-  m_delay: 0
 --- !u!4 &927839098
 Transform:
   m_ObjectHideFlags: 0
