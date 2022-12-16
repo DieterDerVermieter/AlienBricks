@@ -6,7 +6,6 @@ namespace DieterDerVermieter
 {
     public class BallController : MonoBehaviour
     {
-        [SerializeField] private float m_speedBonusPerImpact = 1.01f;
         [SerializeField] private GameObject m_impactEffectPrefab;
 
         [SerializeField] private float m_speed = 5.0f;
@@ -45,13 +44,15 @@ namespace DieterDerVermieter
         {
             if(m_isActive)
             {
-                //var speed = Speed * Mathf.Pow(m_speedBonusPerImpact, m_impactCount);
                 float distanceLeft = m_speed * Time.fixedDeltaTime;
                 float distance = distanceLeft;
 
                 var nextDirection = m_movementDirection;
+
                 IImpactHandler nextImpactHandler = null;
+
                 var hadImpact = false;
+                Vector3 impactPosition = transform.position;
 
                 for (int i = 0; i < Physics2D.CircleCastNonAlloc(transform.position, m_radius, m_movementDirection, m_raycastHits, distance); i++)
                 {
@@ -72,33 +73,29 @@ namespace DieterDerVermieter
                     }
                     else if (hit.distance < distance)
                     {
-                        distance = hit.distance;
-                        nextDirection = m_movementDirection;
+                        distance = hit.distance - 0.01f;
+                        nextDirection = Vector2.Reflect(m_movementDirection, hit.normal);
+
                         nextImpactHandler = hit.collider.GetComponent<IImpactHandler>();
-                        m_triggeredTriggers.Clear();
+
                         hadImpact = true;
+                        impactPosition = hit.point;
 
-                        Instantiate(m_impactEffectPrefab, hit.point, Quaternion.identity);
-
-                        if (Mathf.Abs(hit.normal.x) > Mathf.Abs(hit.normal.y))
-                        {
-                            nextDirection.x = -nextDirection.x;
-                        }
-                        else
-                        {
-                            nextDirection.y = -nextDirection.y;
-                        }
+                        m_triggeredTriggers.Clear();
                     }
                 }
 
                 transform.position += m_movementDirection * distance;
                 m_movementDirection = nextDirection;
 
-                if(hadImpact)
-                    AudioManager.Instance.PlayAudioClip(m_impactSound);
-
                 if (nextImpactHandler != null)
                     nextImpactHandler.HandleImpact(this);
+
+                if (hadImpact)
+                {
+                    Instantiate(m_impactEffectPrefab, impactPosition, Quaternion.identity);
+                    AudioManager.Instance.PlayAudioClip(m_impactSound);
+                }
             }
         }
     }
