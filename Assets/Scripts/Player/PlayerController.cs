@@ -2,10 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 namespace DieterDerVermieter
 {
-    public class PlayerController : TurnHandler
+    public class PlayerController : TurnHandler, IPointerEnterHandler, IPointerExitHandler
     {
         [Header("Aim Indication")]
         [SerializeField] private LineRenderer m_aimLine;
@@ -30,6 +32,11 @@ namespace DieterDerVermieter
         }
 
         private State m_currentState;
+
+        private bool m_isPointerInsideArena;
+
+        private bool m_isAiming;
+        private Vector2 m_aimDirection = Vector2.up;
 
         private Vector2 m_shootingDirection;
         private int m_shootingCount;
@@ -57,25 +64,7 @@ namespace DieterDerVermieter
                 {
                     case State.Aiming:
                         {
-                            var aimDirection = CalculateAimDirection();
-                            UpdateAimIndicator(aimDirection);
-
-                            if (Input.GetButtonDown("Fire1"))
-                            {
-                                // Start shooting
-                                m_currentState = State.Shooting;
-
-                                // Reset relevant values
-                                m_shootingDirection = aimDirection;
-                                m_shootingCount = GameValues.BallCount;
-
-                                m_shootingCounter = 0;
-                                m_shootingTimer = 0;
-
-                                m_collectionCounter = 0;
-
-                                m_hasNextPosition = false;
-                            }
+                            UpdateAimIndicator(m_aimDirection);
                         }
                         break;
 
@@ -126,7 +115,63 @@ namespace DieterDerVermieter
             }
 
             // Only enable the aim line if we are currently aiming
-            m_aimLine.gameObject.SetActive(IsTurnActive && m_currentState == State.Aiming);
+            // Also disable aim line when we are not inside the arena
+            m_aimLine.gameObject.SetActive(IsTurnActive && m_currentState == State.Aiming && m_isAiming && m_isPointerInsideArena);
+        }
+
+
+        private void OnAim(InputValue value)
+        {
+            if (m_currentState != State.Aiming)
+                return;
+
+            // Enable aim line
+            m_isAiming = true;
+
+            // Caculate aim direction based on mouse position
+            Vector2 mousePosition = m_mainCamera.ScreenToWorldPoint(value.Get<Vector2>());
+            Vector2 aimDirection = (mousePosition - (Vector2)transform.position).normalized;
+
+            // Calculate aim angle
+            var aimAngle = Vector2.SignedAngle(Vector2.up, aimDirection);
+            var maxRad = m_maxAimAngle * Mathf.Deg2Rad;
+
+            // Constraint aim direction based on a maximum aim angle
+            if (aimAngle > m_maxAimAngle) aimDirection = new Vector2(-Mathf.Sin(maxRad), Mathf.Cos(maxRad));
+            if (aimAngle < -m_maxAimAngle) aimDirection = new Vector2(-Mathf.Sin(-maxRad), Mathf.Cos(-maxRad));
+
+            m_aimDirection = aimDirection;
+        }
+
+        private void OnFire()
+        {
+            if (m_currentState != State.Aiming)
+                return;
+
+            // Disable aim line
+            m_isAiming = false;
+
+            // Prevent shooting when not inside the arena
+            if (m_isPointerInsideArena)
+                Shoot();
+        }
+
+
+        private void Shoot()
+        {
+            // Start shooting
+            m_currentState = State.Shooting;
+
+            // Reset relevant values
+            m_shootingDirection = m_aimDirection;
+            m_shootingCount = GameValues.BallCount;
+
+            m_shootingCounter = 0;
+            m_shootingTimer = 0;
+
+            m_collectionCounter = 0;
+
+            m_hasNextPosition = false;
         }
 
 
@@ -223,6 +268,17 @@ namespace DieterDerVermieter
         {
             Destroy(ball.gameObject);
             m_collectionCounter++;
+        }
+
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            m_isPointerInsideArena = true;
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            m_isPointerInsideArena = false;
         }
     }
 }
