@@ -24,7 +24,7 @@ namespace DieterDerVermieter
         private void Update()
         {
             var lerpTime = 10.0f * Time.deltaTime;
-            var targetPosition = m_player.transform.position;
+            var targetPosition = m_player.Ship.position;
 
             for (int i = 0; i < m_collectedBalls.Count;)
             {

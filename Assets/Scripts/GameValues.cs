@@ -12,6 +12,7 @@ namespace DieterDerVermieter
         public static int Level;
 
         public static int BallCount;
+        public static float BallSpeed;
 
         public static int Combo;
         public static int Score;

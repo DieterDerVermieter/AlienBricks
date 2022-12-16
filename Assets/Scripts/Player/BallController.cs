@@ -6,16 +6,16 @@ namespace DieterDerVermieter
 {
     public class BallController : MonoBehaviour
     {
-        [SerializeField] private GameObject m_impactEffectPrefab;
+        [Tooltip("Gets automatically to the size of the incoming ball data.")]
+        [SerializeField] private Transform m_visualsContainer;
 
-        [SerializeField] private float m_speed = 5.0f;
-        [SerializeField] private float m_radius = 0.2f;
-
-        [SerializeField] private AudioClip m_impactSound;
+        [SerializeField] private SpriteRenderer m_ballSpriteRenderer;
 
 
         private static RaycastHit2D[] m_raycastHits = new RaycastHit2D[20];
 
+
+        private BallData m_data;
 
         private Vector3 m_movementDirection = Vector2.up;
 
@@ -24,12 +24,17 @@ namespace DieterDerVermieter
         private bool m_isActive;
 
 
-        public int Damage => 1;
+        public int Damage => m_data.BallDamage;
 
 
-        public void Setup( Vector3 direction)
+        public void Setup(BallData data, Vector3 direction)
         {
+            m_data = data;
             m_movementDirection = direction;
+
+            m_visualsContainer.localScale = Vector3.one * m_data.BallRadius * 2.0f;
+            m_ballSpriteRenderer.sprite = m_data.BallSprite;
+
             m_isActive = true;
         }
 
@@ -44,7 +49,7 @@ namespace DieterDerVermieter
         {
             if(m_isActive)
             {
-                float distanceLeft = m_speed * Time.fixedDeltaTime;
+                float distanceLeft = GameValues.BallSpeed * Time.fixedDeltaTime;
                 float distance = distanceLeft;
 
                 var nextDirection = m_movementDirection;
@@ -54,7 +59,7 @@ namespace DieterDerVermieter
                 var hadImpact = false;
                 Vector3 impactPosition = transform.position;
 
-                for (int i = 0; i < Physics2D.CircleCastNonAlloc(transform.position, m_radius, m_movementDirection, m_raycastHits, distance); i++)
+                for (int i = 0; i < Physics2D.CircleCastNonAlloc(transform.position, m_data.BallRadius, m_movementDirection, m_raycastHits, distance); i++)
                 {
                     var hit = m_raycastHits[i];
 
@@ -93,8 +98,8 @@ namespace DieterDerVermieter
 
                 if (hadImpact)
                 {
-                    Instantiate(m_impactEffectPrefab, impactPosition, Quaternion.identity);
-                    AudioManager.Instance.PlayAudioClip(m_impactSound);
+                    Instantiate(m_data.BallImpactEffectPrefab, impactPosition, Quaternion.identity);
+                    AudioManager.Instance.PlayAudioClip(m_data.BallImpactSound);
                 }
             }
         }

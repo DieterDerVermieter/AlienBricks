@@ -9,6 +9,8 @@ namespace DieterDerVermieter
 {
     public class PlayerController : TurnHandler, IPointerEnterHandler, IPointerExitHandler
     {
+        [SerializeField] private Transform m_ship;
+
         [Header("Aim Indication")]
         [SerializeField] private LineRenderer m_aimLine;
 
@@ -19,6 +21,15 @@ namespace DieterDerVermieter
         [SerializeField] private float m_shootDelay = 0.1f;
 
         [SerializeField] private AudioClip m_shootSound;
+
+        [SerializeField] private float m_minBallSpeed = 10.0f;
+        [SerializeField] private float m_maxBallSpeed = 20.0f;
+
+        [Header("Ball Selection")]
+        [SerializeField] Transform m_ballSelectionItemContainer;
+        [SerializeField] BallSelectionItem m_ballSelectionItemPrefab;
+
+        [SerializeField] BallData[] m_balls;
 
 
         private Camera m_mainCamera;
@@ -38,6 +49,7 @@ namespace DieterDerVermieter
         private bool m_isAiming;
         private Vector2 m_aimDirection = Vector2.up;
 
+        private BallData m_shootingBall;
         private Vector2 m_shootingDirection;
         private int m_shootingCount;
 
@@ -45,14 +57,39 @@ namespace DieterDerVermieter
         private float m_shootingTimer;
 
         private int m_collectionCounter;
+        private float m_collectionTimer;
 
         private bool m_hasNextPosition;
         private Vector3 m_nextPosition;
+
+        private BallSelectionItem[] m_ballSelectionItems;
+        private BallSelectionItem m_selectedBallSelectionItem;
+
+
+        public Transform Ship => m_ship;
 
 
         private void Awake()
         {
             m_mainCamera = Camera.main;
+        }
+
+
+        private void Start()
+        {
+            m_ballSelectionItems = new BallSelectionItem[m_balls.Length];
+            for (int i = 0; i < m_balls.Length; i++)
+            {
+                var ballData = m_balls[i];
+
+                var ballSelectionItem = Instantiate(m_ballSelectionItemPrefab, m_ballSelectionItemContainer);
+
+                ballSelectionItem.Setup(this, ballData);
+                ballSelectionItem.SetCooldown(0);
+                ballSelectionItem.SetSelected(false);
+
+                m_ballSelectionItems[i] = ballSelectionItem;
+            }
         }
 
 
@@ -76,7 +113,7 @@ namespace DieterDerVermieter
                                 m_shootingTimer += m_shootDelay;
                                 m_shootingCounter++;
 
-                                ShootBall(m_shootingDirection);
+                                ShootBall();
                             }
 
                             // Are all balls shoot out
@@ -90,18 +127,24 @@ namespace DieterDerVermieter
 
                     case State.Collecting:
                         {
-                            if(m_hasNextPosition)
+                            m_collectionTimer += Time.deltaTime;
+
+                            var maxSpeedTime = 10.0f;
+                            if(m_collectionTimer > maxSpeedTime)
+                                GameValues.BallSpeed = maxSpeedTime;
+
+                            if (m_hasNextPosition)
                             {
                                 // Smoothly move to next position
-                                var lerpTime = 10.0f * Time.deltaTime;
-                                transform.position = Vector3.Lerp(transform.position, m_nextPosition, lerpTime);
+                                var positionLerpTime = 10.0f * Time.deltaTime;
+                                Ship.transform.position = Vector3.Lerp(Ship.transform.position, m_nextPosition, positionLerpTime);
                             }
 
                             // Are all balls collected
                             if(m_collectionCounter >= m_shootingCount)
                             {
                                 // Snap to next position if it wasn't reached
-                                transform.position = m_nextPosition;
+                                Ship.transform.position = m_nextPosition;
 
                                 // End turn
                                 IsTurnActive = false;
@@ -130,7 +173,7 @@ namespace DieterDerVermieter
 
             // Caculate aim direction based on mouse position
             Vector2 mousePosition = m_mainCamera.ScreenToWorldPoint(value.Get<Vector2>());
-            Vector2 aimDirection = (mousePosition - (Vector2)transform.position).normalized;
+            Vector2 aimDirection = (mousePosition - (Vector2)Ship.transform.position).normalized;
 
             // Calculate aim angle
             var aimAngle = Vector2.SignedAngle(Vector2.up, aimDirection);
@@ -159,10 +202,14 @@ namespace DieterDerVermieter
 
         private void Shoot()
         {
+            if (m_selectedBallSelectionItem == null)
+                return;
+
             // Start shooting
             m_currentState = State.Shooting;
 
-            // Reset relevant values
+            // Set relevant values
+            m_shootingBall = m_selectedBallSelectionItem.Data;
             m_shootingDirection = m_aimDirection;
             m_shootingCount = GameValues.BallCount;
 
@@ -170,26 +217,14 @@ namespace DieterDerVermieter
             m_shootingTimer = 0;
 
             m_collectionCounter = 0;
+            m_collectionTimer = 0;
 
             m_hasNextPosition = false;
-        }
 
-
-        private Vector2 CalculateAimDirection()
-        {
-            // Caculate aim direction based on mouse position
-            Vector2 mousePosition = m_mainCamera.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 aimDirection = (mousePosition - (Vector2)transform.position).normalized;
-
-            // Calculate aim angle
-            var aimAngle = Vector2.SignedAngle(Vector2.up, aimDirection);
-            var maxRad = m_maxAimAngle * Mathf.Deg2Rad;
-
-            // Constraint aim direction based on a maximum aim angle
-            if (aimAngle > m_maxAimAngle) aimDirection = new Vector2(-Mathf.Sin(maxRad), Mathf.Cos(maxRad));
-            if (aimAngle < -m_maxAimAngle) aimDirection = new Vector2(-Mathf.Sin(-maxRad), Mathf.Cos(-maxRad));
-
-            return aimDirection;
+            // Reset ball selection
+            m_selectedBallSelectionItem.ResetCooldown();
+            m_selectedBallSelectionItem.SetSelected(false);
+            m_selectedBallSelectionItem = null;
         }
 
 
@@ -197,7 +232,7 @@ namespace DieterDerVermieter
         {
             // Calculate the closest distance before a ball would collide with something
             var distance = Mathf.Infinity;
-            for (int i = 0; i < Physics2D.RaycastNonAlloc(transform.position, aimDirection, m_raycastHits); i++)
+            for (int i = 0; i < Physics2D.RaycastNonAlloc(Ship.transform.position, aimDirection, m_raycastHits); i++)
             {
                 var hit = m_raycastHits[i];
 
@@ -226,16 +261,31 @@ namespace DieterDerVermieter
             IsTurnActive = true;
             m_currentState = State.Aiming;
 
+            GameValues.BallSpeed = m_minBallSpeed;
             GameValues.Combo = 0;
+
+            // Countdown all balls and select the first available one
+            for (int i = 0; i < m_ballSelectionItems.Length; i++)
+            {
+                var item = m_ballSelectionItems[i];
+                item.CountdownCooldown();
+
+                if (m_selectedBallSelectionItem == null && item.Cooldown <= 0)
+                {
+                    m_selectedBallSelectionItem = item;
+                    item.SetSelected(true);
+                }
+            }
         }
 
 
-        private void ShootBall(Vector2 direction)
+        private void ShootBall()
         {
             // Spawn new ball and setup position and direction
             var ball = Instantiate(m_ballPrefab);
-            ball.transform.position = transform.position;
-            ball.Setup(direction);
+
+            ball.transform.position = Ship.transform.position;
+            ball.Setup(m_shootingBall, m_shootingDirection);
 
             AudioManager.Instance.PlayAudioClip(m_shootSound);
         }
@@ -254,7 +304,7 @@ namespace DieterDerVermieter
                 m_hasNextPosition = true;
 
                 // Only move along the x-axis
-                m_nextPosition = transform.position;
+                m_nextPosition = Ship.transform.position;
                 m_nextPosition.x = ball.transform.position.x;
             }
         }
@@ -279,6 +329,22 @@ namespace DieterDerVermieter
         public void OnPointerExit(PointerEventData eventData)
         {
             m_isPointerInsideArena = false;
+        }
+
+
+        public void OnBallSelectionItemClicked(BallSelectionItem item)
+        {
+            if (item == null)
+                return;
+
+            if (item.Cooldown > 0)
+                return;
+
+            if (m_selectedBallSelectionItem != null)
+                m_selectedBallSelectionItem.SetSelected(false);
+
+            m_selectedBallSelectionItem = item;
+            item.SetSelected(true);
         }
     }
 }
