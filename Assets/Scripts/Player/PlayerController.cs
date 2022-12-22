@@ -170,7 +170,10 @@ namespace DieterDerVermieter
                             // Snap to next position if it wasn't reached
                             Ship.transform.position = m_nextPosition;
 
-                            // Destroy all active abilites
+                            // Reset forceField cooldown
+                            m_forceFieldTimer = 0;
+
+                            // Destroy all active forceFields
                             for (int i = 0; i < m_forceFieldContainer.childCount; i++)
                             {
                                 var ability = m_forceFieldContainer.GetChild(i).gameObject;
@@ -268,8 +271,6 @@ namespace DieterDerVermieter
             m_collectionTimer = 0;
 
             m_hasNextPosition = false;
-
-            m_forceFieldTimer = 0;
 
             // Reset ball selection
             m_selectedBallSelectionItem.ResetCooldown();
