@@ -336,7 +336,7 @@ namespace DieterDerVermieter
             var ball = Instantiate(m_ballPrefab, Ship.transform.position, Quaternion.identity, m_ballContainer);
             ball.Setup(m_shootingBall, m_shootingDirection);
 
-            AudioManager.Instance.PlayAudioClip(m_shootSound);
+            SoundEffectManager.Instance.PlayAudioClip(m_shootSound);
         }
 
 

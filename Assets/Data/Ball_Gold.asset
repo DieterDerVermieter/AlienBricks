@@ -18,5 +18,5 @@ MonoBehaviour:
   BallRadius: 0.15
   BallDamage: 3
   BallImpactEffectPrefab: {fileID: 1061084479905151935, guid: 2ab0d1ac75fe1dc40af2fa5041ce29b3, type: 3}
-  BallImpactSound: {fileID: 8300000, guid: ad3e7af2c1cb072459f42ad73d5b3f8f, type: 3}
+  BallImpactSound: {fileID: 8300000, guid: 19ee23220d478354ca29f732069ff0d0, type: 3}
   UseCooldown: 5

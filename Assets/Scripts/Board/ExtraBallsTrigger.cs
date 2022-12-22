@@ -31,7 +31,7 @@ namespace DieterDerVermieter
             GameValues.BallCount += m_extraBalls;
             m_boardController.DestroyObject(this);
 
-            AudioManager.Instance.PlayAudioClip(m_collectionSound);
+            SoundEffectManager.Instance.PlayAudioClip(m_collectionSound);
         }
 
         public void OnBallStay(BallController ball) { }

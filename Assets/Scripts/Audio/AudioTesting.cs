@@ -23,7 +23,7 @@ namespace DieterDerVermieter
                 m_timer = 1 / m_frequency;
                 for (int i = 0; i < m_amount; i++)
                 {
-                    AudioManager.Instance.PlayAudioClip(m_sound);
+                    SoundEffectManager.Instance.PlayAudioClip(m_sound);
                 }
             }
         }

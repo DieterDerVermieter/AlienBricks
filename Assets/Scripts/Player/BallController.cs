@@ -102,7 +102,7 @@ namespace DieterDerVermieter
             if (hadImpact)
             {
                 Instantiate(m_data.BallImpactEffectPrefab, impactPosition, Quaternion.identity);
-                AudioManager.Instance.PlayAudioClip(m_data.BallImpactSound);
+                SoundEffectManager.Instance.PlayAudioClip(m_data.BallImpactSound);
             }
         }
     }

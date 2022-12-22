@@ -82,7 +82,7 @@ namespace DieterDerVermieter
                 m_currentHealth = 0;
                 m_boardController.DestroyObject(this);
 
-                AudioManager.Instance.PlayAudioClip(m_breakSound);
+                SoundEffectManager.Instance.PlayAudioClip(m_breakSound);
 
                 GameValues.Combo++;
                 GameValues.Score += m_pointsWorth * GameValues.Combo;

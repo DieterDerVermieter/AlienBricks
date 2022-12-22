@@ -26,6 +26,9 @@ namespace DieterDerVermieter
         [SerializeField] private Button m_gameOverRestartButton;
         [SerializeField] private Button m_gameOverTitleButton;
 
+        [Header("Settings Panel")]
+        [SerializeField] private GameObject m_settingsPanel;
+
 
         private void OnEnable()
         {
@@ -88,7 +91,7 @@ namespace DieterDerVermieter
 
         private void SettingsButtonOnClick()
         {
-            
+            m_settingsPanel.SetActive(true);
         }
     }
 }
