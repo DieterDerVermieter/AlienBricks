@@ -39,6 +39,7 @@ namespace DieterDerVermieter
             }
 
             Instance = this;
+            DontDestroyOnLoad(gameObject);
 
             // Initialize some sources to get used for playing clips
             for (int i = 0; i < m_audioSourceCount; i++)

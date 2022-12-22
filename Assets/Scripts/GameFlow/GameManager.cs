@@ -12,8 +12,13 @@ namespace DieterDerVermieter
 
         public bool IsPaused { get; private set; }
 
+        public bool IsGameOver { get; private set; }
+
 
         [SerializeField] private List<TurnHandler> m_turnHandlers;
+
+        [SerializeField] private int m_titleSceneIndex;
+        [SerializeField] private int m_gameSceneIndex;
 
 
         private int m_currentTurnHandlerIndex;
@@ -33,6 +38,8 @@ namespace DieterDerVermieter
 
         private void Start()
         {
+            Time.timeScale = 1;
+
             GameValues.Level = 1;
             GameValues.BallCount = 1;
             GameValues.Score = 0;
@@ -79,9 +86,21 @@ namespace DieterDerVermieter
         }
 
 
-        public void Restart()
+        public void TitleScreen()
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            SceneManager.LoadScene(m_titleSceneIndex);
+        }
+
+
+        public void RestartGame()
+        {
+            SceneManager.LoadScene(m_gameSceneIndex);
+        }
+
+
+        public void GameOver()
+        {
+            IsGameOver = true;
         }
     }
 }

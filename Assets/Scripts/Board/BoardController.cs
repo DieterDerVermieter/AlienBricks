@@ -112,7 +112,7 @@ namespace DieterDerVermieter
             foreach (var obj in orderedBoard)
             {
                 if (obj.GridPosition.y >= m_rows - 1)
-                    Debug.Log($"Game Over");
+                    GameManager.Instance.GameOver();
 
                 obj.DoMove();
             }

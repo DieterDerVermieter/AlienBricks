@@ -38,7 +38,6 @@ namespace DieterDerVermieter
             var direction = -vectorToBall.normalized;
 
             ball.MovementDirection = (ball.MovementDirection + direction * influence * m_strength).normalized;
-            Debug.Log($"{name}: New Direction: {ball.MovementDirection}");
         }
     }
 }

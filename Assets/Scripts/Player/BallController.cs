@@ -6,7 +6,7 @@ namespace DieterDerVermieter
 {
     public class BallController : MonoBehaviour
     {
-        [Tooltip("Gets automatically to the size of the incoming ball data.")]
+        [Tooltip("Gets set automatically to the size of the incoming ball data.")]
         [SerializeField] private Transform m_visualsContainer;
 
         [SerializeField] private SpriteRenderer m_ballSpriteRenderer;
