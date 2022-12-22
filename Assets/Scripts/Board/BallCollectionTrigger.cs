@@ -12,13 +12,15 @@ namespace DieterDerVermieter
         List<BallController> m_collectedBalls = new List<BallController>();
 
 
-        public void Trigger(BallController ball)
+        public void OnBallEnter(BallController ball)
         {
             ball.Deactivate();
             m_collectedBalls.Add(ball);
 
             m_player.OnBallCatched(ball);
         }
+
+        public void OnBallStay(BallController ball) { }
 
 
         private void Update()

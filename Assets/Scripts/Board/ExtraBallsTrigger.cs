@@ -21,7 +21,7 @@ namespace DieterDerVermieter
         /// Increases the ball count by <see cref="m_extraBalls"/> and destroys itself.
         /// </summary>
         /// <param name="ball"><inheritdoc/></param>
-        public void Trigger(BallController ball)
+        public void OnBallEnter(BallController ball)
         {
             if (m_triggered)
                 return;
@@ -33,6 +33,8 @@ namespace DieterDerVermieter
 
             AudioManager.Instance.PlayAudioClip(m_collectionSound);
         }
+
+        public void OnBallStay(BallController ball) { }
 
 
         /// <summary>

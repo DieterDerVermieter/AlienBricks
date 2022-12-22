@@ -17,12 +17,12 @@ namespace DieterDerVermieter
 
         private BallData m_data;
 
-        private Vector3 m_movementDirection = Vector2.up;
-
         private HashSet<ITriggerHandler> m_triggeredTriggers = new HashSet<ITriggerHandler>();
 
         private bool m_isActive;
 
+
+        public Vector3 MovementDirection = Vector2.up;
 
         public int Damage => m_data.BallDamage;
 
@@ -30,7 +30,7 @@ namespace DieterDerVermieter
         public void Setup(BallData data, Vector3 direction)
         {
             m_data = data;
-            m_movementDirection = direction;
+            MovementDirection = direction;
 
             m_visualsContainer.localScale = Vector3.one * m_data.BallRadius * 2.0f;
             m_ballSpriteRenderer.sprite = m_data.BallSprite;
@@ -47,60 +47,62 @@ namespace DieterDerVermieter
 
         private void FixedUpdate()
         {
-            if(m_isActive)
+            if (!m_isActive)
+                return;
+
+            float distanceLeft = GameValues.BallSpeed * Time.fixedDeltaTime;
+            float distance = distanceLeft;
+
+            var oldDireciotn = MovementDirection;
+
+            IImpactHandler nextImpactHandler = null;
+
+            var hadImpact = false;
+            Vector3 impactPosition = transform.position;
+
+            for (int i = 0; i < Physics2D.CircleCastNonAlloc(transform.position, m_data.BallRadius, MovementDirection, m_raycastHits, distance); i++)
             {
-                float distanceLeft = GameValues.BallSpeed * Time.fixedDeltaTime;
-                float distance = distanceLeft;
+                var hit = m_raycastHits[i];
 
-                var nextDirection = m_movementDirection;
+                var dot = Vector2.Dot(MovementDirection, hit.normal);
 
-                IImpactHandler nextImpactHandler = null;
-
-                var hadImpact = false;
-                Vector3 impactPosition = transform.position;
-
-                for (int i = 0; i < Physics2D.CircleCastNonAlloc(transform.position, m_data.BallRadius, m_movementDirection, m_raycastHits, distance); i++)
+                if (hit.collider.isTrigger)
                 {
-                    var hit = m_raycastHits[i];
-
-                    var dot = Vector2.Dot(m_movementDirection, hit.normal);
-                    if (dot > 0)
-                        continue;
-
-                    if (hit.collider.isTrigger)
+                    var trigger = hit.collider.GetComponent<ITriggerHandler>();
+                    if (trigger != null)
                     {
-                        var trigger = hit.collider.GetComponent<ITriggerHandler>();
-                        if (trigger != null && !m_triggeredTriggers.Contains(trigger))
+                        if(!m_triggeredTriggers.Contains(trigger) && dot < 0)
                         {
                             m_triggeredTriggers.Add(trigger);
-                            trigger.Trigger(this);
+                            trigger.OnBallEnter(this);
                         }
-                    }
-                    else if (hit.distance < distance)
-                    {
-                        distance = hit.distance - 0.01f;
-                        nextDirection = Vector2.Reflect(m_movementDirection, hit.normal);
 
-                        nextImpactHandler = hit.collider.GetComponent<IImpactHandler>();
-
-                        hadImpact = true;
-                        impactPosition = hit.point;
-
-                        m_triggeredTriggers.Clear();
+                        trigger.OnBallStay(this);
                     }
                 }
-
-                transform.position += m_movementDirection * distance;
-                m_movementDirection = nextDirection;
-
-                if (nextImpactHandler != null)
-                    nextImpactHandler.HandleImpact(this);
-
-                if (hadImpact)
+                else if (dot < 0 && hit.distance < distance)
                 {
-                    Instantiate(m_data.BallImpactEffectPrefab, impactPosition, Quaternion.identity);
-                    AudioManager.Instance.PlayAudioClip(m_data.BallImpactSound);
+                    distance = hit.distance - 0.01f;
+                    MovementDirection = Vector2.Reflect(oldDireciotn, hit.normal);
+
+                    nextImpactHandler = hit.collider.GetComponent<IImpactHandler>();
+
+                    hadImpact = true;
+                    impactPosition = hit.point;
+
+                    m_triggeredTriggers.Clear();
                 }
+            }
+
+            transform.position += MovementDirection * distance;
+
+            if (nextImpactHandler != null)
+                nextImpactHandler.HandleImpact(this);
+
+            if (hadImpact)
+            {
+                Instantiate(m_data.BallImpactEffectPrefab, impactPosition, Quaternion.identity);
+                AudioManager.Instance.PlayAudioClip(m_data.BallImpactSound);
             }
         }
     }

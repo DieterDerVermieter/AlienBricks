@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace DieterDerVermieter
 {
@@ -15,6 +16,7 @@ namespace DieterDerVermieter
         [SerializeField] private LineRenderer m_aimLine;
 
         [Header("Shooting")]
+        [SerializeField] private Transform m_ballContainer;
         [SerializeField] private BallController m_ballPrefab;
 
         [SerializeField] private float m_maxAimAngle = 70.0f;
@@ -26,10 +28,17 @@ namespace DieterDerVermieter
         [SerializeField] private float m_maxBallSpeed = 20.0f;
 
         [Header("Ball Selection")]
-        [SerializeField] Transform m_ballSelectionItemContainer;
-        [SerializeField] BallSelectionItem m_ballSelectionItemPrefab;
+        [SerializeField] private Transform m_ballSelectionItemContainer;
+        [SerializeField] private BallSelectionItem m_ballSelectionItemPrefab;
 
-        [SerializeField] BallData[] m_balls;
+        [SerializeField] private BallData[] m_balls;
+
+        [Header("Force Field")]
+        [SerializeField] private Transform m_forceFieldContainer;
+        [SerializeField] private GameObject m_forceFieldPrefab;
+
+        [SerializeField] private float m_forceFieldCooldown = 5.0f;
+        [SerializeField] private Image m_forceFieldCooldownImage;
 
 
         private Camera m_mainCamera;
@@ -47,6 +56,7 @@ namespace DieterDerVermieter
         private bool m_isPointerInsideArena;
 
         private bool m_isAiming;
+        private Vector2 m_aimPosition;
         private Vector2 m_aimDirection = Vector2.up;
 
         private BallData m_shootingBall;
@@ -64,6 +74,8 @@ namespace DieterDerVermieter
 
         private BallSelectionItem[] m_ballSelectionItems;
         private BallSelectionItem m_selectedBallSelectionItem;
+
+        private float m_forceFieldTimer;
 
 
         public Transform Ship => m_ship;
@@ -95,108 +107,144 @@ namespace DieterDerVermieter
 
         private void Update()
         {
-            if (IsTurnActive)
-            {
-                switch (m_currentState)
-                {
-                    case State.Aiming:
-                        {
-                            UpdateAimIndicator(m_aimDirection);
-                        }
-                        break;
-
-                    case State.Shooting:
-                        {
-                            m_shootingTimer -= Time.deltaTime;
-                            if(m_shootingTimer <= 0)
-                            {
-                                m_shootingTimer += m_shootDelay;
-                                m_shootingCounter++;
-
-                                ShootBall();
-                            }
-
-                            // Are all balls shoot out
-                            if (m_shootingCounter >= m_shootingCount)
-                            {
-                                // Start collecting
-                                m_currentState = State.Collecting;
-                            }
-                        }
-                        break;
-
-                    case State.Collecting:
-                        {
-                            m_collectionTimer += Time.deltaTime;
-
-                            var maxSpeedTime = 10.0f;
-                            if(m_collectionTimer > maxSpeedTime)
-                                GameValues.BallSpeed = maxSpeedTime;
-
-                            if (m_hasNextPosition)
-                            {
-                                // Smoothly move to next position
-                                var positionLerpTime = 10.0f * Time.deltaTime;
-                                Ship.transform.position = Vector3.Lerp(Ship.transform.position, m_nextPosition, positionLerpTime);
-                            }
-
-                            // Are all balls collected
-                            if(m_collectionCounter >= m_shootingCount)
-                            {
-                                // Snap to next position if it wasn't reached
-                                Ship.transform.position = m_nextPosition;
-
-                                // End turn
-                                IsTurnActive = false;
-                            }
-                        }
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-
             // Only enable the aim line if we are currently aiming
             // Also disable aim line when we are not inside the arena
             m_aimLine.gameObject.SetActive(IsTurnActive && m_currentState == State.Aiming && m_isAiming && m_isPointerInsideArena);
+
+            if (!IsTurnActive)
+                return;
+
+            // Countdown forceField cooldown
+            if (m_forceFieldTimer > 0)
+                m_forceFieldTimer -= Time.deltaTime;
+
+            // Update forceField cooldown indicator
+            m_forceFieldCooldownImage.fillAmount = m_forceFieldTimer / m_forceFieldCooldown;
+
+            switch (m_currentState)
+            {
+                case State.Aiming:
+                    {
+                        UpdateAimIndicator(m_aimDirection);
+                    }
+                    break;
+
+                case State.Shooting:
+                    {
+                        m_shootingTimer -= Time.deltaTime;
+                        if (m_shootingTimer <= 0)
+                        {
+                            m_shootingTimer += m_shootDelay;
+                            m_shootingCounter++;
+
+                            ShootBall();
+                        }
+
+                        // Are all balls shoot out
+                        if (m_shootingCounter >= m_shootingCount)
+                        {
+                            // Start collecting
+                            m_currentState = State.Collecting;
+                        }
+                    }
+                    break;
+
+                case State.Collecting:
+                    {
+                        m_collectionTimer += Time.deltaTime;
+
+                        var maxSpeedTime = 10.0f;
+                        if (m_collectionTimer > maxSpeedTime)
+                            GameValues.BallSpeed = maxSpeedTime;
+
+                        if (m_hasNextPosition)
+                        {
+                            // Smoothly move to next position
+                            var positionLerpTime = 10.0f * Time.deltaTime;
+                            Ship.transform.position = Vector3.Lerp(Ship.transform.position, m_nextPosition, positionLerpTime);
+                        }
+
+                        // Are all balls collected
+                        if (m_collectionCounter >= m_shootingCount)
+                        {
+                            // Snap to next position if it wasn't reached
+                            Ship.transform.position = m_nextPosition;
+
+                            // Destroy all active abilites
+                            for (int i = 0; i < m_forceFieldContainer.childCount; i++)
+                            {
+                                var ability = m_forceFieldContainer.GetChild(i).gameObject;
+                                Destroy(ability);
+                            }
+
+                            // End turn
+                            IsTurnActive = false;
+                        }
+                    }
+                    break;
+
+                default:
+                    break;
+            }
         }
 
 
         private void OnAim(InputValue value)
         {
-            if (m_currentState != State.Aiming)
+            if(!IsTurnActive)
                 return;
 
-            // Enable aim line
-            m_isAiming = true;
-
-            // Caculate aim direction based on mouse position
             Vector2 mousePosition = m_mainCamera.ScreenToWorldPoint(value.Get<Vector2>());
-            Vector2 aimDirection = (mousePosition - (Vector2)Ship.transform.position).normalized;
+            m_aimPosition = mousePosition;
 
-            // Calculate aim angle
-            var aimAngle = Vector2.SignedAngle(Vector2.up, aimDirection);
-            var maxRad = m_maxAimAngle * Mathf.Deg2Rad;
+            if (m_currentState == State.Aiming)
+            {
+                // Enable aim line
+                m_isAiming = true;
 
-            // Constraint aim direction based on a maximum aim angle
-            if (aimAngle > m_maxAimAngle) aimDirection = new Vector2(-Mathf.Sin(maxRad), Mathf.Cos(maxRad));
-            if (aimAngle < -m_maxAimAngle) aimDirection = new Vector2(-Mathf.Sin(-maxRad), Mathf.Cos(-maxRad));
+                // Caculate aim direction based on mouse position
+                Vector2 aimDirection = (mousePosition - (Vector2)Ship.transform.position).normalized;
 
-            m_aimDirection = aimDirection;
+                // Calculate aim angle
+                var aimAngle = Vector2.SignedAngle(Vector2.up, aimDirection);
+                var maxRad = m_maxAimAngle * Mathf.Deg2Rad;
+
+                // Constraint aim direction based on a maximum aim angle
+                if (aimAngle > m_maxAimAngle) aimDirection = new Vector2(-Mathf.Sin(maxRad), Mathf.Cos(maxRad));
+                if (aimAngle < -m_maxAimAngle) aimDirection = new Vector2(-Mathf.Sin(-maxRad), Mathf.Cos(-maxRad));
+
+                m_aimDirection = aimDirection;
+            }
         }
 
         private void OnFire()
         {
-            if (m_currentState != State.Aiming)
+            if (!IsTurnActive)
                 return;
 
             // Disable aim line
             m_isAiming = false;
 
-            // Prevent shooting when not inside the arena
-            if (m_isPointerInsideArena)
+            // Prevent fire when not inside the arena
+            if (!m_isPointerInsideArena)
+                return;
+
+            if (m_currentState == State.Aiming)
+            {
+                // Start shooting
                 Shoot();
+            }
+            else
+            {
+                // Can spawn another forceField?
+                if (m_forceFieldTimer <= 0)
+                {
+                    m_forceFieldTimer = m_forceFieldCooldown;
+
+                    // Spawn ability
+                    SpawnForceField(m_aimPosition);
+                }
+            }
         }
 
 
@@ -220,6 +268,8 @@ namespace DieterDerVermieter
             m_collectionTimer = 0;
 
             m_hasNextPosition = false;
+
+            m_forceFieldTimer = 0;
 
             // Reset ball selection
             m_selectedBallSelectionItem.ResetCooldown();
@@ -282,12 +332,17 @@ namespace DieterDerVermieter
         private void ShootBall()
         {
             // Spawn new ball and setup position and direction
-            var ball = Instantiate(m_ballPrefab);
-
-            ball.transform.position = Ship.transform.position;
+            var ball = Instantiate(m_ballPrefab, Ship.transform.position, Quaternion.identity, m_ballContainer);
             ball.Setup(m_shootingBall, m_shootingDirection);
 
             AudioManager.Instance.PlayAudioClip(m_shootSound);
+        }
+
+
+        private void SpawnForceField(Vector2 position)
+        {
+            // Spawn new forceField and setup position
+            var ability = Instantiate(m_forceFieldPrefab, position, Quaternion.identity, m_forceFieldContainer);
         }
 
 

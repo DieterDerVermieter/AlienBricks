@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fd83efdbbc8faea41b8c5cfd9d57160d, type: 3}
-  m_Name: Bullet
+  m_Name: Ball_Silver
   m_EditorClassIdentifier: 
-  DisplayName: Bullet
-  DisplayIcon: {fileID: 21300000, guid: ee1062a3738a3c0439e92da232a88ed9, type: 3}
-  BallSprite: {fileID: 21300000, guid: ee1062a3738a3c0439e92da232a88ed9, type: 3}
-  BallRadius: 0.2
-  BallDamage: 1
+  DisplayName: Silver Ball
+  DisplayIcon: {fileID: 21300000, guid: 98b78b5215020494c8d1d7e36817a641, type: 3}
+  BallSprite: {fileID: 21300000, guid: 98b78b5215020494c8d1d7e36817a641, type: 3}
+  BallRadius: 0.3
+  BallDamage: 2
   BallImpactEffectPrefab: {fileID: 1061084479905151935, guid: 2ab0d1ac75fe1dc40af2fa5041ce29b3, type: 3}
   BallImpactSound: {fileID: 8300000, guid: ad3e7af2c1cb072459f42ad73d5b3f8f, type: 3}
-  UseCooldown: 0
+  UseCooldown: 2
