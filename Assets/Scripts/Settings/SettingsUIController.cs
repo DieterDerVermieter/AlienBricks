@@ -9,7 +9,7 @@ namespace DieterDerVermieter
 {
     public class SettingsUIController : MonoBehaviour
     {
-        [SerializeField] private AudioClip m_volumeTestSound;
+        [SerializeField] private SoundEffectData m_volumeTestSound;
 
         [SerializeField] private Button m_backButton;
 
@@ -68,7 +68,7 @@ namespace DieterDerVermieter
         {
             SettingsManager.SetSoundEffectSettings(state, SettingsManager.SoundEffectVolume);
 
-            SoundEffectManager.Instance.PlayAudioClip(m_volumeTestSound);
+            SoundEffectManager.Instance.PlayOnce(m_volumeTestSound);
         }
 
         private void SoundEffectVolumeSliderOnValueChanged(float value)
@@ -78,7 +78,7 @@ namespace DieterDerVermieter
             var volume = value / 100;
             SettingsManager.SetSoundEffectSettings(SettingsManager.SoundEffectsEnabled, volume);
 
-            SoundEffectManager.Instance.PlayAudioClip(m_volumeTestSound);
+            SoundEffectManager.Instance.PlayOnce(m_volumeTestSound);
         }
 
 

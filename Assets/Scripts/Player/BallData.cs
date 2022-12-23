@@ -15,7 +15,7 @@ namespace DieterDerVermieter
         public int BallDamage = 1;
 
         public GameObject BallImpactEffectPrefab;
-        public AudioClip BallImpactSound;
+        public SoundEffectData BallImpactSound;
 
         public int UseCooldown = 0;
     }

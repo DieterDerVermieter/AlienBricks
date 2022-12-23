@@ -52,6 +52,10 @@ MonoBehaviour:
   m_duration: 3
   m_strength: 0.2
   m_radius: 2.5
+  m_sound:
+    Clip: {fileID: 8300000, guid: c815434d22e089146a673d4ad681588e, type: 3}
+    Priority: 3
+  m_soundRetriggerTime: 0.6
 --- !u!58 &8403396002225624277
 CircleCollider2D:
   m_ObjectHideFlags: 0

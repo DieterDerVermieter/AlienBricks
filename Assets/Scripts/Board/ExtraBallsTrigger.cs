@@ -10,7 +10,7 @@ namespace DieterDerVermieter
     {
         [SerializeField] private int m_extraBalls = 1;
 
-        [SerializeField] private AudioClip m_collectionSound;
+        [SerializeField] private SoundEffectData m_collectionSound;
 
 
         private bool m_triggered = false;
@@ -31,7 +31,7 @@ namespace DieterDerVermieter
             GameValues.BallCount += m_extraBalls;
             m_boardController.DestroyObject(this);
 
-            SoundEffectManager.Instance.PlayAudioClip(m_collectionSound);
+            SoundEffectManager.Instance.PlayOnce(m_collectionSound);
         }
 
         public void OnBallStay(BallController ball) { }

@@ -12,12 +12,23 @@ namespace DieterDerVermieter
         [SerializeField] private float m_strength = 10.0f;
         [SerializeField] private float m_radius = 2.5f;
 
+        [SerializeField] private SoundEffectData m_sound;
+        [SerializeField] private float m_soundRetriggerTime;
+
 
         private float m_lifetime;
+        private float m_soundTimer;
 
 
         private void Update()
         {
+            m_soundTimer -= Time.deltaTime;
+            if(m_soundTimer <= 0)
+            {
+                m_soundTimer = m_soundRetriggerTime;
+                SoundEffectManager.Instance.PlayOnce(m_sound);
+            }
+
             m_lifetime += Time.deltaTime;
             if(m_lifetime >= m_duration)
             {

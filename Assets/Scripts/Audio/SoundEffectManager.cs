@@ -25,10 +25,17 @@ namespace DieterDerVermieter
             public float Value;
         }
 
+        private class SourceData
+        {
+            public AudioSource Source;
+            public float TimeLeft;
+        }
 
-        private AudioSource[] m_sources;
-        private Stack<AudioSource> m_freeSources = new Stack<AudioSource>();
-        private Dictionary<AudioClip, ClipInfo> m_playingSources = new Dictionary<AudioClip, ClipInfo>();
+
+        private SourceData[] m_sources;
+        private int m_nextFreeSource = 0;
+
+        private float[] m_priorityGauge;
 
         private bool m_isMuted = false;
 
@@ -45,14 +52,14 @@ namespace DieterDerVermieter
             DontDestroyOnLoad(gameObject);
 
             // Initialize some sources to get used for playing clips
-            m_sources = new AudioSource[m_audioSourceCount];
+            m_sources = new SourceData[m_audioSourceCount];
             for (int i = 0; i < m_audioSourceCount; i++)
             {
                 var source = Instantiate(m_audioSourcePrefab, transform);
-
-                m_sources[i] = source;
-                m_freeSources.Push(source);
+                m_sources[i] = new SourceData { Source = source };
             }
+
+            m_priorityGauge = new float[SoundEffectData.MAX_PRIORITY + 1];
 
             OnSoundEffectSettingsChanged();
         }
@@ -71,59 +78,93 @@ namespace DieterDerVermieter
         }
 
 
-        /// <summary>
-        /// Play an <see cref="AudioClip"/> a single time.
-        /// </summary>
-        /// <param name="clip">The clip to play.</param>
-        public void PlayAudioClip(AudioClip clip)
+        public void PlayOnce(SoundEffectData data)
         {
-            // Skip playing audio, if we are muted
-            if (m_isMuted)
+            if (!TryPlay(data, out var sourceData))
                 return;
 
-            if (m_playingSources.TryGetValue(clip, out var clipInfo))
-            {
-                // Don't play this clip, if it was played a moment ago
-                if (clipInfo.Value >= m_audioClipOverloadThreshold)
-                    return;
+            sourceData.Source.loop = false;
+        }
 
-                clipInfo.Source.PlayOneShot(clip);
-                clipInfo.Value += 1;
-            }
-            else
-            {
-                // Check, if there is a free source
-                if (m_freeSources.Count <= 0)
-                    return;
+        public void PlayLooped(SoundEffectData data, float duration)
+        {
+            if (!TryPlay(data, out var sourceData))
+                return;
 
-                clipInfo = new ClipInfo();
-                clipInfo.Source = m_freeSources.Pop();
+            sourceData.Source.loop = true;
+            sourceData.TimeLeft = duration;
+        }
 
-                clipInfo.Source.PlayOneShot(clip);
-                clipInfo.Value += 1;
+        public void PlayLooped(SoundEffectData data, int count)
+        {
+            if (!TryPlay(data, out var sourceData))
+                return;
 
-                // Put source into playing dict
-                m_playingSources.Add(clip, clipInfo);
-            }
+            sourceData.Source.loop = true;
+            sourceData.TimeLeft = count * data.Clip.length;
+        }
+
+
+        private bool TryPlay(SoundEffectData soundEffectData, out SourceData sourceData)
+        {
+            sourceData = null;
+
+            if (m_nextFreeSource >= m_sources.Length)
+                return false;
+
+            var gauge = m_priorityGauge[soundEffectData.Priority];
+            if (gauge > m_audioClipOverloadThreshold)
+                return false;
+
+            sourceData = m_sources[m_nextFreeSource];
+            m_nextFreeSource++;
+
+            sourceData.Source.clip = soundEffectData.Clip;
+            sourceData.Source.priority = soundEffectData.Priority;
+
+            sourceData.Source.Play();
+
+            return true;
         }
 
 
         private void Update()
         {
-            // Go trough playing sources and check, if some are done playing
-            foreach (var clip in m_playingSources.Keys.ToList())
+            int index = 0;
+            while(index < m_nextFreeSource)
             {
-                var clipInfo = m_playingSources[clip];
-                if (clipInfo.Source.isPlaying)
+                var sourceData = m_sources[index];
+
+                if(sourceData.Source.loop)
                 {
-                    // Adjust the sources value to stop clips from being played to frequent
-                    clipInfo.Value *= 1 - Time.deltaTime / clip.length;
-                    continue;
+                    sourceData.TimeLeft -= Time.deltaTime;
+                    if(sourceData.TimeLeft > 0)
+                    {
+                        index++;
+                        continue;
+                    }
+
+                    sourceData.Source.Stop();
+                }
+                else
+                {
+                    if(sourceData.Source.isPlaying)
+                    {
+                        index++;
+                        continue;
+                    }
                 }
 
-                // Move source to free list, so it can get used for another clip
-                m_playingSources.Remove(clip);
-                m_freeSources.Push(clipInfo.Source);
+                m_nextFreeSource--;
+
+                var tmp = m_sources[index];
+                m_sources[index] = m_sources[m_nextFreeSource];
+                m_sources[m_nextFreeSource] = tmp;
+            }
+
+            for (int i = 0; i < m_priorityGauge.Length; i++)
+            {
+                m_priorityGauge[i] *= 1 - Time.deltaTime;
             }
         }
 
@@ -136,10 +177,10 @@ namespace DieterDerVermieter
             // Set values for all audioSources
             for (int i = 0; i < m_sources.Length; i++)
             {
-                var source = m_sources[i];
+                var sourceData = m_sources[i];
 
-                source.mute = m_isMuted;
-                source.volume = SettingsManager.SoundEffectVolume;
+                sourceData.Source.mute = m_isMuted;
+                sourceData.Source.volume = SettingsManager.SoundEffectVolume;
             }
         }
     }

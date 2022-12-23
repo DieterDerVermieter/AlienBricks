@@ -908,7 +908,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_audioSourcePrefab: {fileID: 4821047095295571428, guid: 5f52c9a796de2874881a7e9e664e83e5, type: 3}
-  m_audioSourceCount: 4
+  m_audioSourceCount: 20
   m_audioClipOverloadThreshold: 2
 --- !u!4 &1010580198
 Transform:
@@ -1096,7 +1096,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1467648870
 RectTransform:
   m_ObjectHideFlags: 0

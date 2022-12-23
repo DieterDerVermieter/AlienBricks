@@ -22,7 +22,7 @@ namespace DieterDerVermieter
         [SerializeField] private float m_maxAimAngle = 70.0f;
         [SerializeField] private float m_shootDelay = 0.1f;
 
-        [SerializeField] private AudioClip m_shootSound;
+        [SerializeField] private SoundEffectData m_shootSound;
 
         [SerializeField] private float m_minBallSpeed = 10.0f;
         [SerializeField] private float m_maxBallSpeed = 20.0f;
@@ -336,7 +336,7 @@ namespace DieterDerVermieter
             var ball = Instantiate(m_ballPrefab, Ship.transform.position, Quaternion.identity, m_ballContainer);
             ball.Setup(m_shootingBall, m_shootingDirection);
 
-            SoundEffectManager.Instance.PlayAudioClip(m_shootSound);
+            SoundEffectManager.Instance.PlayOnce(m_shootSound);
         }
 
 

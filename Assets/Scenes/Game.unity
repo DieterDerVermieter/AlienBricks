@@ -1165,7 +1165,9 @@ MonoBehaviour:
   m_ballPrefab: {fileID: 7135825349531017921, guid: da98b0e14639ace42a924b545caf6bba, type: 3}
   m_maxAimAngle: 80
   m_shootDelay: 0.2
-  m_shootSound: {fileID: 8300000, guid: 70e02441ad3cd8f488092b6a4933e446, type: 3}
+  m_shootSound:
+    Clip: {fileID: 8300000, guid: 4fb135d3c45ee7343ba34122f8adc35f, type: 3}
+    Priority: 4
   m_minBallSpeed: 10
   m_maxBallSpeed: 20
   m_ballSelectionItemContainer: {fileID: 2057040469}

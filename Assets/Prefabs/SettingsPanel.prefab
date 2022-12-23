@@ -1489,7 +1489,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4de9eaa03b420a44784fa53c15a7b5e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_volumeTestSound: {fileID: 8300000, guid: bbf0cfed9c82a8a46a1570071bd6b48c, type: 3}
+  m_volumeTestSound:
+    Clip: {fileID: 8300000, guid: bbf0cfed9c82a8a46a1570071bd6b48c, type: 3}
+    Priority: 0
   m_backButton: {fileID: 8025885097541025387}
   m_soundEffectsEnabledToggle: {fileID: 8025885098147794631}
   m_soundEffectVolumeSlider: {fileID: 8025885097522817242}
